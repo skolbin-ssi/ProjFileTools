@@ -49,6 +49,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Helpers\OpenProjectFileUtil.cs" />
     <Compile Include="Helpers\XmlInfo.cs" />
     <Compile Include="Helpers\XmlTools.cs" />
     <Page Include="**\*.xaml">
@@ -92,6 +93,16 @@
     </Compile>
     <Compile Include="TextViewCreationListener.cs" />
     <Compile Include="Theme.cs" />
+    <Compile Include="ToolWindows\ActionCommand.cs" />
+    <Compile Include="ToolWindows\FilePathToIconConverter.cs" />
+    <Compile Include="ToolWindows\ProjectImportsTree.cs" />
+    <Compile Include="ToolWindows\ProjectImportsTreeCommand.cs" />
+    <Compile Include="ToolWindows\ProjectImportsTreeControl.xaml.cs">
+      <DependentUpon>ProjectImportsTreeControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ToolWindows\ProjectImportsViewModel.cs" />
+    <Compile Include="ToolWindows\ProjectShim.cs" />
+    <Compile Include="ToolWindows\SearchConverter.cs" />
     <Compile Include="WpfUtil.cs" />
     <Compile Update="PackageInfoControl.xaml.cs">
       <DependentUpon>PackageInfoControl.xaml</DependentUpon>
@@ -123,6 +134,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <VSCTCompile Include="ProjectFileToolsPackage.vsct">
+      <ResourceName>Menus.ctmenu</ResourceName>
+    </VSCTCompile>
     <ProjectReference Include="..\ProjectFileTools.MSBuild\ProjectFileTools.MSBuild.csproj">
       <Project>{C2C10E1F-A307-49FC-9D9A-106FCBE88B91}</Project>
       <Name>ProjectFileTools.MSBuild</Name>

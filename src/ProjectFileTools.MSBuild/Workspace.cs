@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -66,9 +67,19 @@ namespace ProjectFileTools.MSBuild
             return _project?.CreateProjectInstance().EvaluateCondition(text) ?? false;
         }
 
+        public bool EvaluateCondition(string text, string projectFile)
+        {
+            return _collection.LoadProject(projectFile)?.CreateProjectInstance().EvaluateCondition(text) ?? false;
+        }
+
         public string GetEvaluatedPropertyValue(string text)
         {
             return _project?.ExpandString(text) ?? string.Empty;
+        }
+
+        public string GetEvaluatedPropertyValue(string text, string projectFile)
+        {
+            return _collection.LoadProject(projectFile)?.ExpandString(text) ?? string.Empty;
         }
 
         public List<Definition> GetItemProvenance(string fileSpec)
@@ -230,6 +241,43 @@ namespace ProjectFileTools.MSBuild
             }
 
             return definitions;
+        }
+
+        public ImportTreeNode ComputeImportTree(IWorkspaceManager workspaceManager)
+        {
+            if (_project is null)
+            {
+                return null;
+            }
+
+            ImportTreeNode root = new ImportTreeNode(_project);
+            Dictionary<string, ImportTreeNode> nodeLookup = new Dictionary<string, ImportTreeNode>(StringComparer.OrdinalIgnoreCase)
+            {
+                { _project.FullPath, root }
+            };
+
+            List<ResolvedImport> chain = _project.Imports.ToList();
+
+            for (int i = 0; i < chain.Count; ++i)
+            {
+                ResolvedImport import = chain[i];
+                if (!nodeLookup.TryGetValue(import.ImportingElement.ContainingProject.FullPath, out ImportTreeNode parentNode))
+                {
+                    //Got here too early, can't find the parent, move it to the end
+                    chain.Add(import);
+                    chain.RemoveAt(i--);
+                    continue;
+                }
+
+                if (!nodeLookup.TryGetValue(import.ImportedProject.FullPath, out ImportTreeNode childNode))
+                {
+                    nodeLookup[import.ImportedProject.FullPath] = childNode = new ImportTreeNode(import, true);
+                }
+
+                parentNode.Children.Add(childNode);
+            }
+
+            return root;
         }
 
         internal bool ContainsProject(string filePath)

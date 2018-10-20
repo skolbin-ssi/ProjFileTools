@@ -117,7 +117,7 @@ namespace ProjectFileTools
 
                     if (fileInfo.Exists)
                     {
-                        ServiceUtil.DTE.ItemOperations.OpenFile(fileInfo.FullName);
+                        OpenProjectFileUtil.TryOpenFile(fileInfo.FullName);
                         return VSConstants.S_OK;
                     }
                 }
@@ -157,7 +157,7 @@ namespace ProjectFileTools
                     FileInfo fileInfo = new FileInfo(absolutePath);
                     if (fileInfo.Exists)
                     {
-                        ServiceUtil.DTE.ItemOperations.OpenFile(fileInfo.FullName);
+                        OpenProjectFileUtil.TryOpenFile(fileInfo.FullName);
                         return VSConstants.S_OK;
                         //ServiceUtil.DTE.Commands.Raise(VSConstants.CMDSETID.StandardCommandSet2K_string, (int)EditProjectFileCommandId, ref unusedArgs, ref unusedArgs);
                     }
@@ -257,7 +257,7 @@ namespace ProjectFileTools
 
                         if (fileInfo.Exists)
                         {
-                            ServiceUtil.DTE.ItemOperations.OpenFile(fileInfo.FullName);
+                            OpenProjectFileUtil.TryOpenFile(fileInfo.FullName);
                             return VSConstants.S_OK;
                         }
                     }
@@ -271,6 +271,7 @@ namespace ProjectFileTools
 
         private int? HandleGoToDefinition()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             TextView.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument textDoc);
 
             XmlInfo info = XmlTools.GetXmlInfo(TextView.TextSnapshot, TextView.Caret.Position.BufferPosition.Position);
@@ -293,14 +294,11 @@ namespace ProjectFileTools
                 DTE dte = ServiceUtil.DTE;
                 dte.MainWindow.Activate();
 
-                using (var state = new NewDocumentStateScope(__VSNEWDOCUMENTSTATE.NDS_Provisional, Guid.Parse(ProjectFileToolsPackage.PackageGuidString)))
-                {
-                    Window w = dte.ItemOperations.OpenFile(definitions[0].File, EnvDTE.Constants.vsViewKindTextView);
+                OpenProjectFileUtil.TryOpenFile(definitions[0].File);
 
-                    if (definitions[0].Line.HasValue)
-                    {
-                        ((TextSelection)dte.ActiveDocument.Selection).GotoLine(definitions[0].Line.Value, true);
-                    }
+                if (definitions[0].Line.HasValue)
+                {
+                    ((TextSelection)dte.ActiveDocument.Selection).GotoLine(definitions[0].Line.Value, true);
                 }
 
                 return VSConstants.S_OK;

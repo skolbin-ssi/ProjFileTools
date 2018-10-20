@@ -73,14 +73,14 @@ namespace ProjectFileTools.QuickInfo
                 if (info != null)
                 {
                     IWorkspace workspace = workspace = _workspaceManager.GetWorkspace(textDoc.FilePath);
-                    string evaluatedValue = workspace.GetEvaluatedPropertyValue(info.AttributeValue);
+                    string evaluatedValue = workspace.GetEvaluatedPropertyValue(info.AttributeValue, textDoc.FilePath);
                     ITrackingSpan target = session.TextView.TextSnapshot.CreateTrackingSpan(new Span(info.AttributeValueStart, info.AttributeValueLength), SpanTrackingMode.EdgeNegative);
 
                     if (info.AttributeName == "Condition")
                     {
                         try
                         {
-                            bool isTrue = workspace.EvaluateCondition(info.AttributeValue);
+                            bool isTrue = workspace.EvaluateCondition(info.AttributeValue, textDoc.FilePath);
                             evaluatedValue = $"Expanded value: {evaluatedValue}\nEvaluation result: {isTrue}";
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             return new QuickInfoItem(target, evaluatedValue);
